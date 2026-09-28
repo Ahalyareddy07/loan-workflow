@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ledgerline – Loan Approval Workflow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f4f5f2;--card:#fff;--ink:#16302f;--mut:#61726f;--line:#dde2dd;--brand:#0f3d3e;--brass:#b08d3c;--ok:#2f7d4f;--bad:#b3413a;--warn:#a8741a;--side:#0f3d3e;--sideink:#dfe9e6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a19;--card:#172524;--ink:#e6efec;--mut:#93a7a3;--line:#284240;--brand:#4fb0a5;--side:#0b1413;--brass:#d2ab55}}
+:root[data-theme="dark"]{--bg:#101a19;--card:#172524;--ink:#e6efec;--mut:#93a7a3;--line:#284240;--brand:#4fb0a5;--side:#0b1413;--brass:#d2ab55}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,serif;margin:0}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+aside{background:var(--side);color:var(--sideink);padding:20px 14px;display:flex;flex-direction:column;gap:6px}
+aside .logo{font:700 21px "Source Serif 4",Georgia,serif;padding:4px 10px 16px;color:#fff}
+aside .logo span{color:var(--brass)}
+aside button.nav{all:unset;cursor:pointer;padding:9px 12px;border-radius:6px;color:var(--sideink)}
+aside button.nav:hover{background:rgba(255,255,255,.08)}aside button.nav.on{background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+aside .grow{flex:1}
+main{padding:22px 28px;min-width:0}
+header.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+select,input,textarea,button{font:inherit;color:var(--ink)}
+select,input,textarea{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:500}
+[data-theme="dark"] .btn{color:#0b1413}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.bad{background:var(--bad);color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.stat b{display:block;font:700 28px "Source Serif 4",Georgia,serif}.stat span{color:var(--mut);font-size:13px}
+.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--mut);font-weight:500;font-size:13px}
+tr.click{cursor:pointer}tr.click:hover{background:var(--bg)}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--line);color:var(--ink)}
+.b-Approved,.b-Disbursed{background:#d6efe0;color:#1d5a37}.b-Rejected{background:#f5d9d6;color:#8a2c26}
+.b-Submitted{background:#e3e9f5;color:#33507f}.b-UnderVerification,.b-CreditAssessment{background:#f6ead0;color:#7a5410}
+.stack{display:flex;flex-direction:column;gap:14px}
+.two{display:grid;gap:14px;grid-template-columns:1.2fr 1fr}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.steps{display:flex;gap:4px;margin:10px 0}.steps i{flex:1;height:6px;border-radius:3px;background:var(--line)}.steps i.d{background:var(--brand)}.steps i.x{background:var(--bad)}
+.tl{border-left:2px solid var(--line);margin:8px 0 0 6px;padding-left:14px}.tl div{margin-bottom:10px;font-size:14px}.tl small{color:var(--mut);display:block}
+.drawer{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:flex-end;z-index:10}
+.drawer>div{background:var(--bg);width:min(520px,100%);height:100%;overflow:auto;padding:22px;padding-top:calc(22px + env(safe-area-inset-top,0px))}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));right:18px;background:var(--brand);color:#fff;padding:10px 16px;border-radius:6px;z-index:20}
+[data-theme="dark"] .toast{color:#0b1413}
+.mut{color:var(--mut)}
+@media(max-width:820px){.app{grid-template-columns:1fr}aside{flex-direction:row;flex-wrap:wrap;padding:10px}aside .logo{padding:4px 8px}aside .grow{display:none}main{padding:16px}.two{grid-template-columns:1fr}}
+</style></head><body>
+<div id="root"></div>
+<script>
+const STAGES=["Submitted","Under Verification","Credit Assessment","Approved","Disbursed","Closed"];
+const PRODUCTS={Personal:{rate:11.5},Home:{rate:8.6},Auto:{rate:9.4},Education:{rate:9.0},Business:{rate:12.5}};
+const ROLES={applicant:"Applicant",officer:"Loan Officer",analyst:"Credit Analyst",manager:"Manager",admin:"Administrator"};
+const ME="Priya Nair";
+const emi=(p,r,m)=>{const i=r/1200;return i?p*i*Math.pow(1+i,m)/(Math.pow(1+i,m)-1):p/m};
+const inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+const day=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+let seq=1008;
+const seed=(id,name,type,amt,months,inc,liab,status,age,risk,rec)=>({id,name,type,amt,months,inc,liab,status,risk:risk??null,rec:rec??null,created:day(age),
+ emp:"Salaried",purpose:"General",docs:["Identity","Address","Income"],
+ tl:[{s:"Submitted",by:name,t:day(age),n:"Application submitted"}].concat(STAGES.indexOf(status)>0?[{s:"Under Verification",by:"Arjun Rao",t:day(age-1),n:"Documents verified"}]:[])});
+let S={
+ role:"applicant",view:"dashboard",theme:"",page:1,sel:null,toast:"",
+ f:{q:"",status:"",type:"",min:""},
+ apps:[seed(1001,ME,"Personal",300000,36,72000,8000,"Approved",20,34,"Approve"),
+  seed(1002,ME,"Auto",650000,60,72000,8000,"Under Verification",4),
+  seed(1003,"Rahul Mehta","Home",4200000,240,150000,20000,"Credit Assessment",9,41,"Approve"),
+  seed(1004,"Sana Iqbal","Education",800000,72,45000,5000,"Credit Assessment",7),
+  seed(1005,"Vikram Shah","Business",1500000,48,90000,60000,"Rejected",15,82,"Reject"),
+  seed(1006,"Meera Pillai","Personal",150000,24,38000,4000,"Submitted",1),
+  seed(1007,"Karan Joshi","Auto",900000,60,110000,12000,"Disbursed",30,28,"Approve"),
+  seed(1008,"Anita Desai","Home",3100000,180,120000,15000,"Closed",60,36,"Approve")],
+ notes:[{t:"Your Personal loan #1001 was approved",u:"applicant",d:day(2)},{t:"Documents requested for #1002",u:"applicant",d:day(1)}],
+ audit:[{t:new Date().toISOString().slice(0,16).replace("T"," "),u:"system",a:"Workspace initialised"}]
+};
+const log=(a)=>S.audit.unshift({t:new Date().toISOString().slice(0,16).replace("T"," "),u:ROLES[S.role],a});
+const note=(t,u)=>S.notes.unshift({t,u,d:day(0)});
+const toast=m=>{S.toast=m;render();setTimeout(()=>{S.toast="";render()},2200)};
+const $=id=>document.getElementById(id);
+const cls=s=>s.replace(/ /g,"");
+const badge=s=>`<span class="badge b-${cls(s)}">${s}</span>`;
+const myApps=()=>S.role==="applicant"?S.apps.filter(a=>a.name===ME):S.apps;
+
+/* Workflow engine: which role can move which stage, and what it does */
+function actions(a){
+ const r=S.role,s=a.status,o=[];
+ if(r==="officer"&&s==="Submitted")o.push(["Start verification","verify"]);
+ if(r==="officer"&&s==="Under Verification"){o.push(["Request documents","req"]);o.push(["Verify and forward","fwd"])}
+ if(r==="analyst"&&s==="Credit Assessment")o.push([a.risk==null?"Run risk assessment":"Re-run assessment","risk"]);
+ if(r==="manager"&&s==="Credit Assessment"&&a.risk!=null){o.push(["Approve","approve"]);o.push(["Reject","reject"])}
+ if((r==="manager"||r==="admin")&&s==="Approved")o.push(["Disburse loan","disburse"]);
+ if((r==="manager"||r==="admin")&&s==="Disbursed")o.push(["Close loan","close"]);
+ return o;
+}
+function step(id,k){
+ const a=S.apps.find(x=>x.id===id),c=($("cmt")||{}).value||"";
+ const mv=(st,n)=>{a.status=st;a.tl.push({s:st,by:ROLES[S.role],t:day(0),n:n+(c?" – "+c:"")});note(`#${a.id} is now ${st}`,"applicant");log(`#${a.id} → ${st}`)};
+ if(k==="verify")mv("Under Verification","Review started");
+ if(k==="req"){a.tl.push({s:a.status,by:ROLES[S.role],t:day(0),n:"Additional documents requested"+(c?" – "+c:"")});note(`Documents requested for #${a.id}`,"applicant");log(`#${a.id} documents requested`)}
+ if(k==="fwd")mv("Credit Assessment","Verification completed");
+ if(k==="risk"){const dti=(a.liab+emi(a.amt,PRODUCTS[a.type].rate,a.months))/a.inc;
+  a.risk=Math.max(5,Math.min(98,Math.round(dti*100*0.85+(a.amt/(a.inc*12))*6)));a.rec=a.risk<50?"Approve":"Reject";
+  a.tl.push({s:a.status,by:ROLES[S.role],t:day(0),n:`Risk score ${a.risk}, recommends ${a.rec.toLowerCase()}`});log(`#${a.id} risk ${a.risk}`)}
+ if(k==="approve")mv("Approved","Loan approved");
+ if(k==="reject")mv("Rejected","Loan rejected");
+ if(k==="disburse")mv("Disbursed","Funds disbursed");
+ if(k==="close")mv("Closed","Workflow completed");
+ toast("Saved");
+}
+function progress(st){
+ const i=STAGES.indexOf(st==="Rejected"?"Credit Assessment":st);
+ return `<div class="steps">${STAGES.map((_,j)=>`<i class="${st==="Rejected"&&j===3?"x":j<=i?"d":""}"></i>`).join("")}</div>`;
+}
+function gauge(v){
+ const col=v<40?"var(--ok)":v<60?"var(--warn)":"var(--bad)";
+ return `<svg viewBox="0 0 120 70" width="150" role="img" aria-label="Risk score ${v}"><path d="M10 62A50 50 0 0 1 110 62" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/><path d="M10 62A50 50 0 0 1 110 62" fill="none" stroke="${col}" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="${v} 100"/><text x="60" y="58" text-anchor="middle" font-size="20" font-weight="700" fill="currentColor">${v}</text></svg>`;
+}
+function dash(){
+ const A=myApps(),n=s=>A.filter(a=>a.status===s).length,active=A.filter(a=>!["Approved","Rejected","Disbursed","Closed"].includes(a.status)).length;
+ const emp=S.role!=="applicant";
+ const st=[...STAGES.slice(0,3),"Approved","Rejected","Disbursed","Closed"];
+ const max=Math.max(1,...st.map(n));
+ const decided=n("Approved")+n("Rejected")+n("Disbursed")+n("Closed"),appr=n("Approved")+n("Disbursed")+n("Closed");
+ const cards=emp?[["Pending reviews",A.filter(a=>["Submitted","Under Verification","Credit Assessment"].includes(a.status)).length],["Total applications",A.length],["Approval rate",decided?Math.round(appr/decided*100)+"%":"–"],["Avg. processing",A.length?"6.5 days":"–"]]
+  :[["Total applications",A.length],["Active",active],["Approved",appr],["Rejected",n("Rejected")]];
+ if(S.role==="admin")cards.push(["Total users",5],["Rejection rate",decided?Math.round(n("Rejected")/decided*100)+"%":"–"]);
+ return `<div class="stack"><div class="grid">${cards.map(c=>`<div class="card stat"><b>${c[1]}</b><span>${c[0]}</span></div>`).join("")}</div>
+ <div class="two"><div class="card"><h3>Applications by status</h3><svg viewBox="0 0 400 190" width="100%" role="img" aria-label="Bar chart of applications by status">${st.map((s,i)=>{const h=n(s)/max*120;return `<rect x="${i*56+12}" y="${140-h}" width="36" height="${h}" rx="3" fill="${s==="Rejected"?"var(--bad)":"var(--brand)"}"/><text x="${i*56+30}" y="${134-h}" text-anchor="middle" font-size="12" fill="currentColor">${n(s)}</text><text x="${i*56+30}" y="158" text-anchor="middle" font-size="9" fill="var(--mut)">${s.split(" ")[0]}</text>`}).join("")}</svg></div>
+ <div class="card"><h3>Notifications</h3>${S.notes.filter(x=>emp?x.u!=="applicant":x.u==="applicant").slice(0,5).map(x=>`<p style="margin:10px 0 0">${x.t}<br><small class="mut">${x.d} · in-app and email</small></p>`).join("")||'<p class="mut">Nothing new. Updates appear here when an application changes.</p>'}</div></div>
+ ${S.role==="applicant"?`<div class="card"><h3>Your latest application</h3>${A[0]?`<p>#${A[0].id} · ${A[0].type} · ${inr(A[0].amt)} ${badge(A[0].status)}</p>${progress(A[0].status)}`:'<p class="mut">No applications yet. Start one from Apply for a loan.</p>'}</div>`:""}</div>`;
+}
+function list(){
+ const f=S.f;let A=myApps().filter(a=>(!f.q||a.name.toLowerCase().includes(f.q.toLowerCase()))&&(!f.status||a.status===f.status)&&(!f.type||a.type===f.type)&&(!f.min||a.amt>=+f.min));
+ const per=5,pages=Math.max(1,Math.ceil(A.length/per));S.page=Math.min(S.page,pages);
+ const rows=A.slice((S.page-1)*per,S.page*per);
+ return `<div class="stack"><div class="card"><div class="form">
+ <label>Applicant<input id="fq" value="${f.q}" placeholder="Search by name"></label>
+ <label>Status<select id="fs"><option value="">All</option>${[...STAGES,"Rejected"].map(s=>`<option ${f.status===s?"selected":""}>${s}</option>`).join("")}</select></label>
+ <label>Loan type<select id="ft"><option value="">All</option>${Object.keys(PRODUCTS).map(s=>`<option ${f.type===s?"selected":""}>${s}</option>`).join("")}</select></label>
+ <label>Minimum amount<input id="fm" type="number" min="0" value="${f.min}"></label></div>
+ <div class="row" style="margin-top:12px"><button class="btn alt" onclick="exportCsv()">Export to Excel (CSV)</button></div></div>
+ <div class="card wrap"><table><thead><tr><th>ID</th><th>Applicant</th><th>Type</th><th>Amount</th><th>Risk</th><th>Status</th><th>Applied</th></tr></thead><tbody>
+ ${rows.map(a=>`<tr class="click" tabindex="0" onclick="S.sel=${a.id};render()" onkeydown="if(event.key==='Enter'){S.sel=${a.id};render()}"><td>#${a.id}</td><td>${a.name}</td><td>${a.type}</td><td>${inr(a.amt)}</td><td>${a.risk??"–"}</td><td>${badge(a.status)}</td><td>${a.created}</td></tr>`).join("")||`<tr><td colspan="7" class="mut">No applications match these filters. Clear a filter to see more.</td></tr>`}</tbody></table>
+ <div class="row" style="justify-content:space-between;margin-top:10px"><span class="mut">${A.length} results · page ${S.page} of ${pages}</span><span class="row"><button class="btn alt" ${S.page<2?"disabled":""} onclick="S.page--;render()">Previous</button><button class="btn alt" ${S.page>=pages?"disabled":""} onclick="S.page++;render()">Next</button></span></div></div></div>`;
+}
+function exportCsv(){
+ const h="id,name,type,amount,months,status,risk\n"+myApps().map(a=>[a.id,a.name,a.type,a.amt,a.months,a.status,a.risk??""].join(",")).join("\n");
+ const u=URL.createObjectURL(new Blob([h],{type:"text/csv"}));const l=document.createElement("a");l.href=u;l.download="applications.csv";l.click();
+}
+function apply(){
+ const p=PRODUCTS;
+ return `<div class="card"><h3>Apply for a loan</h3><p class="mut">Complete the details, then attach your documents. You can track progress from My applications.</p>
+ <div class="form" style="margin-top:12px">
+ <label>Full name<input id="an" value="${ME}"></label><label>Date of birth<input id="ad" type="date" value="1992-04-11"></label>
+ <label>Gender<select id="ag"><option>Female</option><option>Male</option><option>Other</option></select></label>
+ <label>Phone<input id="ap" value="+91 98765 43210"></label><label>Email<input id="ae" type="email" value="priya@example.com"></label>
+ <label>Residential address<input id="aa" value="Banjara Hills, Hyderabad"></label>
+ <label>Employment status<select id="as"><option>Salaried</option><option>Self-employed</option><option>Retired</option></select></label>
+ <label>Employer<input id="aer" value="Northwind Labs"></label>
+ <label>Monthly income (₹)<input id="ai" type="number" min="1" value="72000"></label><label>Existing liabilities (₹/month)<input id="al" type="number" min="0" value="8000"></label>
+ <label>Loan type<select id="lt" onchange="calc()">${Object.keys(p).map(k=>`<option>${k}</option>`).join("")}</select></label>
+ <label>Loan amount (₹)<input id="la" type="number" min="10000" value="500000" oninput="calc()"></label>
+ <label>Repayment period (months)<input id="lm" type="number" min="6" max="360" value="48" oninput="calc()"></label>
+ <label>Purpose<input id="lp" value="Home renovation"></label></div>
+ <p class="card" style="margin:14px 0;background:var(--bg)">Estimated EMI: <b id="emi"></b> <span class="mut" id="rate"></span></p>
+ <label>Documents: identity, address, income proof, bank statements, employment certificate<input type="file" multiple accept=".pdf,.jpg,.png"></label>
+ <p class="row" style="margin-top:14px"><button class="btn" onclick="submitApp()">Submit application</button></p></div>`;
+}
+function calc(){const t=$("lt").value,r=PRODUCTS[t].rate;$("emi").textContent=inr(emi(+$("la").value||0,r,+$("lm").value||1));$("rate").textContent=`at ${r}% a year`}
+function submitApp(){
+ const v=id=>$(id).value;
+ if(!v("an").trim()||+v("ai")<=0||+v("la")<10000||+v("lm")<6)return toast("Check name, income, amount (min ₹10,000) and period (min 6 months)");
+ const a=seed(++seq,v("an").trim().replace(/[<>]/g,""),v("lt"),+v("la"),+v("lm"),+v("ai"),+v("al")||0,"Submitted",0);
+ a.purpose=v("lp").replace(/[<>]/g,"");S.apps.unshift(a);note(`Application #${a.id} submitted`,"applicant");note(`New application #${a.id} awaiting review`,"staff");log(`#${a.id} submitted`);
+ S.view="list";S.f={q:"",status:"",type:"",min:""};toast(`Application #${a.id} submitted`);
+}
+function calcPage(){
+ return `<div class="card" style="max-width:520px"><h3>EMI calculator</h3><div class="form" style="margin-top:12px">
+ <label>Amount (₹)<input id="ca" type="number" value="1000000" oninput="cc()"></label><label>Rate (% a year)<input id="cr" type="number" step="0.1" value="9" oninput="cc()"></label><label>Months<input id="cm" type="number" value="120" oninput="cc()"></label></div>
+ <p style="margin-top:14px">Monthly EMI <b id="ce" style="font-size:22px"></b><br><span class="mut">Total interest <span id="ci"></span></span></p></div>`;
+}
+function cc(){const p=+$("ca").value,r=+$("cr").value,m=+$("cm").value||1,e=emi(p,r,m);$("ce").textContent=inr(e);$("ci").textContent=inr(e*m-p)}
+function adminView(){
+ const by={};S.apps.forEach(a=>by[a.type]=(by[a.type]||0)+a.amt);
+ return `<div class="stack"><div class="card"><h3>Reports</h3><p class="mut">Loan volume by product</p>${Object.entries(by).map(([k,v])=>`<p style="margin:6px 0">${k}: <b>${inr(v)}</b></p>`).join("")}</div>
+ <div class="card wrap"><h3>Audit log</h3><table><thead><tr><th>Time</th><th>User</th><th>Action</th></tr></thead><tbody>${S.audit.map(l=>`<tr><td>${l.t}</td><td>${l.u}</td><td>${l.a}</td></tr>`).join("")}</tbody></table></div></div>`;
+}
+function detail(){
+ const a=S.apps.find(x=>x.id===S.sel);if(!a)return"";
+ const e=emi(a.amt,PRODUCTS[a.type].rate,a.months),acts=actions(a);
+ return `<div class="drawer" onclick="if(event.target===this){S.sel=null;render()}"><div><div class="row" style="justify-content:space-between"><h2>#${a.id} · ${a.type} loan</h2><button class="btn alt" onclick="S.sel=null;render()">Close</button></div>
+ <p>${a.name} ${badge(a.status)}</p>${progress(a.status)}
+ <div class="card" style="margin:12px 0"><p style="margin:0">Amount <b>${inr(a.amt)}</b> over ${a.months} months<br>EMI <b>${inr(e)}</b> at ${PRODUCTS[a.type].rate}%<br>Income ${inr(a.inc)}/month · Liabilities ${inr(a.liab)}/month<br>Documents: ${a.docs.join(", ")}</p></div>
+ ${a.risk!=null?`<div class="card row" style="margin-bottom:12px">${gauge(a.risk)}<div><b>Recommendation: ${a.rec}</b><br><span class="mut">Higher scores mean higher risk. Below 50 is recommended for approval.</span></div></div>`:""}
+ ${acts.length?`<div class="card" style="margin-bottom:12px"><label>Comment<textarea id="cmt" rows="2" placeholder="Add a note for the audit trail"></textarea></label><div class="row" style="margin-top:10px">${acts.map(x=>`<button class="btn ${x[1]==="reject"?"bad":""}" onclick="step(${a.id},'${x[1]}')">${x[0]}</button>`).join("")}</div></div>`:""}
+ <h3>Timeline</h3><div class="tl">${a.tl.slice().reverse().map(t=>`<div><b>${t.s}</b> · ${t.n}<small>${t.by} · ${t.t}</small></div>`).join("")}</div></div></div>`;
+}
+function render(){
+ const r=S.role,nav=[["dashboard","Dashboard"],...(r==="applicant"?[["apply","Apply for a loan"]]:[]),["list",r==="applicant"?"My applications":"Applications"],["calc","EMI calculator"],...(r==="admin"?[["admin","Reports and audit log"]]:[])];
+ if(!nav.some(n=>n[0]===S.view))S.view="dashboard";
+ const body={dashboard:dash,apply,list,calc:calcPage,admin:adminView}[S.view]();
+ if(S.theme)document.documentElement.dataset.theme=S.theme;
+ const keep=document.activeElement&&document.activeElement.id;
+ $("root").innerHTML=`<div class="app"><aside><div class="logo">Ledger<span>line</span></div>${nav.map(n=>`<button class="nav ${S.view===n[0]?"on":""}" onclick="S.view='${n[0]}';S.page=1;render()">${n[1]}</button>`).join("")}<div class="grow"></div>
+ <button class="nav" onclick="S.theme=(document.documentElement.dataset.theme==='dark'||(!S.theme&&matchMedia('(prefers-color-scheme:dark)').matches))?'light':'dark';render()">Toggle dark mode</button></aside>
+ <main><header class="top"><h1>${nav.find(n=>n[0]===S.view)[1]}</h1><label style="flex-direction:row;align-items:center;gap:8px">Viewing as<select id="role" style="width:auto">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${r===k?"selected":""}>${v}</option>`).join("")}</select></label></header>${body}</main></div>${detail()}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:""}`;
+ $("role").onchange=e=>{S.role=e.target.value;S.sel=null;S.page=1;render()};
+ [["fq","q"],["fs","status"],["ft","type"],["fm","min"]].forEach(([i,k])=>{const el=$(i);if(el)el.oninput=el.onchange=()=>{S.f[k]=el.value;S.page=1;render();const n=$(i);if(n){n.focus();if(n.setSelectionRange&&n.type==="text")n.setSelectionRange(99,99)}}});
+ if(S.view==="apply")calc();if(S.view==="calc")cc();
+ if(keep&&$(keep)&&keep!=="role")$(keep).focus();
+}
+render();
+</script></body></html>
