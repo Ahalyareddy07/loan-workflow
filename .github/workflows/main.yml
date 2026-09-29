@@ -1,0 +1,85 @@
+// loanWorkflow.js
+
+function loanWorkflow(application) {
+    console.log("=== LOAN WORKFLOW STARTED ===");
+
+    // Step 1: Application submission
+    application.status = "Application Submitted";
+    console.log("1. Application submitted");
+
+    // Step 2: Document verification
+    if (!application.documentsVerified) {
+        application.status = "Rejected";
+        application.reason = "Documents not verified";
+        return application;
+    }
+
+    application.status = "Documents Verified";
+    console.log("2. Documents verified");
+
+    // Step 3: Eligibility check
+    if (application.income < 25000) {
+        application.status = "Rejected";
+        application.reason = "Income below eligibility requirement";
+        return application;
+    }
+
+    application.status = "Eligible";
+    console.log("3. Eligibility check passed");
+
+    // Step 4: Credit/Risk assessment
+    if (application.creditScore < 650) {
+        application.status = "Rejected";
+        application.reason = "Credit score too low";
+        return application;
+    }
+
+    application.status = "Risk Assessment Passed";
+    console.log("4. Risk assessment passed");
+
+    // Step 5: Loan officer review
+    application.status = "Under Loan Officer Review";
+    console.log("5. Loan officer reviewing application");
+
+    // Step 6: Approval decision
+    if (application.loanAmount > application.income * 20) {
+        application.status = "Rejected";
+        application.reason = "Requested loan amount is too high";
+        return application;
+    }
+
+    application.status = "Approved";
+    console.log("6. Loan approved");
+
+    // Step 7: Loan sanction
+    application.status = "Loan Sanctioned";
+    console.log("7. Loan sanctioned");
+
+    // Step 8: Disbursement
+    application.status = "Loan Disbursed";
+    console.log("8. Loan amount disbursed");
+
+    // Step 9: Completion
+    application.status = "Completed";
+    console.log("9. Loan workflow completed");
+
+    return application;
+}
+
+
+// Example loan application
+const application = {
+    applicantName: "Ahalya",
+    income: 50000,
+    loanAmount: 500000,
+    creditScore: 750,
+    documentsVerified: true,
+    status: "Pending"
+};
+
+
+// Run workflow
+const result = loanWorkflow(application);
+
+console.log("\n=== FINAL RESULT ===");
+console.log(result);
